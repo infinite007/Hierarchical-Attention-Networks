@@ -9,6 +9,7 @@ params = {
 }
 
 params["vocab_size"] = 100
+params["num_classes"] = 5
 
 model = model.Model(params)
 model.forward()
@@ -18,4 +19,5 @@ with tf.Session() as sess:
 	sess.run(init_op)
 	inp = np.random.random_integers(0,100, (1, params['sentence_length'], params['word_length']))
 	feed_dict = {model.input:inp}
-	sess.run(model.gru_output_states, feed_dict=feed_dict)
+	states = sess.run(model.logits, feed_dict=feed_dict)
+	print(states)
