@@ -4,7 +4,8 @@ class Model:
 	def __init__(self, params):
 		self.params = params
 		self.input = tf.placeholder(dtype=tf.int32)
-		self.target = tf.placeholder(dtype=tf.int32,shape=[None])
+		self.target = tf.placeholder(dtype=tf.int32)
+		self.learning_rate = tf.placeholder(dtype=tf.float32)
 		self.word_embeddings = tf.get_variable('embeddings',[self.params['vocab_size'], self.params['embedding_size']])
 
 	def att_block(self, inputs, out_size, scope):
@@ -40,8 +41,12 @@ class Model:
 		sentence_inputs_reshaped = tf.reshape(sentence_inputs, [-1,n_sents, 2*self.params['embedding_size']])
 		sentence_outputs, sentence_attention = self.att_block(sentence_inputs_reshaped, 2*self.params['embedding_size'], 'sentence_gru')
 		final_inputs = tf.multiply(sentence_outputs, sentence_attention)
-		#todo error in the line below. resolve the issue.
-		self.logits = self.prediction_layer(final_inputs, 4*self.params['embedding_size'], self.params['num_classes'], 'prediction')
+		self.final_inputs = tf.reduce_mean(final_inputs, axis=1)
+		self.logits = self.prediction_layer(self.final_inputs, 4*self.params['embedding_size'], self.params['num_classes'], 'prediction')
+
+		self.preds = tf.argmax(self.logits, axis=-1)
 
 	def backward(self):
-		pass
+		self.loss = tf.nn.softmax_cross_entropy_with_logits(self.target, self.logits)
+		optimizer = tf.train.AdamOptimizer(self.learning_rate)
+		self.train_op = optimizer.minimize(self.loss)
