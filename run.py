@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import model
+from reader import reader
 
 params = {
 	"n_sents":100,
@@ -8,9 +9,15 @@ params = {
 	"embedding_size":50
 }
 
+
+
 params["vocab_size"] = 100+1
 params["num_classes"] = 5
+params["train_dir"] = './data/train.pkl'
+params["valid_dir"] = './data/valid.pkl'
+params["test_dir"] = './data/test.pkl'
 
+rdr = reader()
 model = model.Model(params)
 model.forward()
 init_op = [tf.global_variables_initializer(), tf.local_variables_initializer()]
